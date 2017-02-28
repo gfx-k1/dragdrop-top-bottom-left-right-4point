@@ -1,4 +1,4 @@
-QT += widgets
+QT += widgets gui
 
 HEADERS += \
     mainwindow.h \

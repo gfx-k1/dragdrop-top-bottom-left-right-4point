@@ -2,36 +2,75 @@
 #include <algorithm>
 #include <math.h>
 #include <QVector>
+#include <QtGlobal>
+#include <QDebug>
 
-DraggableRectItem::DraggableRectItem(QGraphicsItem* parent):
-    QGraphicsRectItem(parent), m_dragged(false)
+int positiochooser = 0;
+int colourchooser = 0;
+
+DraggableRectItem::DraggableRectItem(QGraphicsItem *parent):
+    QGraphicsItem(parent), m_dragged(false)
 {
     setFlags(QGraphicsItem::ItemIsSelectable|
              QGraphicsItem::ItemIsMovable);
+
+    //connect(this, SIGNAL(emitpoint(QPointF)), this, SLOT(loadppoint(QPointF)));
+
 }
 
 QPointF DraggableRectItem::movepos(0,0);
+QPointF DraggableRectItem::enterpos(0,0);
+bool DraggableRectItem::firstpos = false;
 
 void DraggableRectItem::setAnchorPoint(const QPointF &anchorPoint){
     this->anchorPoint = anchorPoint;
 }
 
+void DraggableRectItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    enterpos.setX(event->pos().x());
+    enterpos.setY(event->pos().y());
+
+
+    QVector<double> list2;
+
+    QLineF linemtl = QLineF(boundingRect().topLeft(), enterpos);
+    QLineF linemtr = QLineF(boundingRect().topRight(), enterpos);
+    QLineF linembl = QLineF(boundingRect().bottomLeft(), enterpos);
+    QLineF linembr = QLineF(boundingRect().bottomRight(), enterpos);
+
+    list2.append(double(linemtl.length()));
+    list2.append(double(linemtr.length()));
+    list2.append(double(linembl.length()));
+    list2.append(double(linembr.length()));
+    double minM = *std::min_element(list2.constBegin(), list2.constEnd());
+    if(minM == double(linemtl.length())){colourchooser = 1;}
+    else if(minM == double(linemtr.length())){colourchooser = 2;}
+    else if(minM == double(linembl.length())){colourchooser = 3;}
+    else if(minM == double(linembr.length())){colourchooser = 4;}
+    else if((enterpos.x() == 0) && (enterpos.y()==0)){positiochooser = 0; colourchooser = 0;}
+    list2.clear();
+    QGraphicsItem::mousePressEvent(event);
+}
+
+
 void DraggableRectItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event){
     m_dragged = true;
     movepos.setX(event->scenePos().x());
     movepos.setY(event->scenePos().y());
-    QGraphicsRectItem::mouseMoveEvent(event);
+
+    QGraphicsItem::mouseMoveEvent(event);
 }
 
 void DraggableRectItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event){
 
-    QLineF line;
-    QLineF linetl;
-    QLineF linetr;
-    QLineF linebl;
-    QLineF linebr;
-    QVector<double> list1;
-    int positiochooser = 0;
+
+    positiochooser = 0;
+    qreal min = 0;
+    qreal mis1 = 0;
+    qreal mis2 = 0;
+
+
 
     if(m_dragged){
         QList<QGraphicsItem*> colItems = collidingItems();
@@ -42,68 +81,168 @@ void DraggableRectItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event){
             qreal shortestDist = 100000;
             foreach(QGraphicsItem* item, colItems){
 
-                linetl = QLineF(item->sceneBoundingRect().topLeft(), movepos);
-                linetr = QLineF(item->sceneBoundingRect().topRight(), movepos);
-                linebl = QLineF(item->sceneBoundingRect().bottomLeft(), movepos);
-                linebr = QLineF(item->sceneBoundingRect().bottomRight(), movepos);
-                line = QLineF(item->sceneBoundingRect().center(), this->sceneBoundingRect().center());
+                switch (colourchooser) {
+                case 1:
+                    if(!firstpos){
+                    mis1 = QLineF(item->sceneBoundingRect().topRight(),  movepos).length();
+                    mis2 = QLineF(item->sceneBoundingRect().bottomRight(),  movepos).length();
+                    min = qMin(mis1, mis2);
 
-                //l = std::fmin(std::fmin((std::fmin(linetl.length(), linetr.length())), linebl.length()), linebr.length());
-
-                if(line.length() < shortestDist){
-                    shortestDist = line.length();
-                    closestItem = item;
-                    list1.append(double(linetl.length()));
-                    list1.append(double(linetr.length()));
-                    list1.append(double(linebl.length()));
-                    list1.append(double(linebr.length()));
-                    double min = *std::min_element(list1.constBegin(), list1.constEnd());
-                    if(min == double(linetl.length())){positiochooser = 1;}
-                    else if(min == double(linetr.length())){positiochooser = 2;}
-                    else if(min == double(linebl.length())){positiochooser = 3;}
-                    else if(min == double(linebr.length())){positiochooser = 4;}
-                    else if((movepos.x() == 0) && (movepos.y()==0)){positiochooser = 0;}
-                    list1.clear();
+                    if(min < shortestDist){
+                        shortestDist = min;
+                        closestItem = item;
+                    }
+                    if(min == mis1)
+                    {
+                        this->setPos(QPointF(closestItem->scenePos().x()+80, closestItem->scenePos().y()));
+                    }
+                    else
+                    {
+                        this->setPos(QPointF(closestItem->scenePos().x()+80, closestItem->scenePos().y()+50));
+                    }
+                    qDebug() << "1 topright/topleft:  " << mis1;
+                    qDebug() << "1 Bottomright/topleft:  " << mis2;
+                    //firstpos = true;
+                    }
+                    break;
+                case 2:
+                    if(!firstpos){
+                    mis1 = QLineF(item->sceneBoundingRect().topLeft(), movepos).length();
+                    mis2 = QLineF(item->sceneBoundingRect().bottomLeft(), movepos).length();
+                    min = qMin(mis1, mis2);
+                    if(min < shortestDist){
+                        shortestDist = min;
+                        closestItem = item;
+                    }
+                    if(min == mis1)
+                    {
+                        this->setPos(QPointF(closestItem->scenePos().x()-80, closestItem->scenePos().y()));
+                    }
+                    else
+                    {
+                        this->setPos(QPointF(closestItem->scenePos().x()-80, closestItem->scenePos().y()+50));
+                    }
+                    qDebug() << "2 topLeft/topRight:  " << mis1;
+                    qDebug() << "2 bottomLeft/topRight:  " << mis2;
+                    //firstpos = true;
+                    }
+                    break;
+                case 3:
+                    if(!firstpos){
+                    mis1 = QLineF(item->sceneBoundingRect().topRight(), movepos).length();
+                    mis2 = QLineF(item->sceneBoundingRect().bottomRight(), movepos).length();
+                    min = qMin(mis1, mis2);
+                    if(min < shortestDist){
+                        shortestDist = min;
+                        closestItem = item;
+                    }
+                    if(min == mis1)
+                    {
+                        this->setPos(QPointF(closestItem->scenePos().x()+80, closestItem->scenePos().y()-50));
+                    }
+                    else
+                    {
+                        this->setPos(QPointF(closestItem->scenePos().x()+80, closestItem->scenePos().y()));
+                    }
+                    qDebug() << "3 topright/bottomLeft:  " << mis1;
+                    qDebug() << "3 bottomright/bottomLeft:  " << mis2;
+                    //firstpos = true;
+                    }
+                    break;
+                case 4:
+                    if(!firstpos){
+                    mis1 = QLineF(item->sceneBoundingRect().topLeft(), movepos).length();
+                    mis2 = QLineF(item->sceneBoundingRect().bottomLeft(), movepos).length();
+                    min = qMin(mis1, mis2);
+                    if(min < shortestDist){
+                        shortestDist = min;
+                        closestItem = item;
+                    }
+                    if(min == mis1)
+                    {
+                        this->setPos(QPointF(closestItem->scenePos().x()-80, closestItem->scenePos().y()-50));
+                    }
+                    else
+                    {
+                        this->setPos(QPointF(closestItem->scenePos().x()-80, closestItem->scenePos().y()));
+                    }
+                    qDebug() << "4 topLeft/bottomright:  " << mis1;
+                    qDebug() << "4 bottomLeft/bottomright:  " << mis2;
+                    //firstpos = true;
+                    }
+                    break;
+                default:
+                    this->setPos(anchorPoint);
+                    break;
                 }
 
 
             }
-            switch (positiochooser) {
-            case 1:
-                this->setPos(QPointF(closestItem->scenePos().x()-50, closestItem->scenePos().y()-50));
-                break;
-            case 2:
-                this->setPos(QPointF(closestItem->scenePos().x()+50, closestItem->scenePos().y()-50));
-                break;
-            case 3:
-                this->setPos(QPointF(closestItem->scenePos().x()-50, closestItem->scenePos().y()+50));
-                break;
-            case 4:
-                this->setPos(QPointF(closestItem->scenePos().x()+50, closestItem->scenePos().y()+50));
-                break;
-            default:
-                this->setPos(anchorPoint);
-                break;
-            }
-            /*if(l==linetl.length()){
-                this->setPos(QPointF(closestItem->scenePos().x()-50, closestItem->scenePos().y()-50));
-            }
-            else if(l==linetr.length()){
-                this->setPos(QPointF(closestItem->scenePos().x()+50, closestItem->scenePos().y()-50));
-            }
-            else if(l==linebl.length()){
-                this->setPos(QPointF(closestItem->scenePos().x()-50, closestItem->scenePos().y()+50));
-            }
-            else if(l==linebr.length()){
-                this->setPos(QPointF(closestItem->scenePos().x()+50, closestItem->scenePos().y()+50));
-            }*/
-            //this->setPos(QPointF(closestItem->scenePos().x()+50, closestItem->scenePos().y()+50));
-            //this->setPos(QPointF(closestItem->scenePos().x()-50, closestItem->scenePos().y()-50));
-            //this->setPos(QPointF(closestItem->scenePos().x()+50, closestItem->scenePos().y()-50));
-            //this->setPos(QPointF(closestItem->scenePos().x()-50, closestItem->scenePos().y()+50));
 
         }
+        enterpos.setX(0);
+        enterpos.setY(0);
+        colourchooser = 0;
         m_dragged = false;
+        firstpos = false;
     }
-    QGraphicsRectItem::mouseReleaseEvent(event);
+    QGraphicsItem::mouseReleaseEvent(event);
 }
+
+void DraggableRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    //option Q_UNUSED;
+    //widget Q_UNUSED;
+    painter->setBrush(QBrush(Qt::NoBrush));
+    painter->drawRect(boundingRect().topLeft().x(), boundingRect().topLeft().y(), 80,50);
+
+
+    switch (colourchooser) {
+    case 1:
+        painter->setBrush(QBrush(Qt::red, Qt::SolidPattern));
+        painter->drawRect(boundingRect().topLeft().x(), boundingRect().topLeft().y(), 20,20);
+        painter->setBrush(QBrush(Qt::blue, Qt::SolidPattern));
+        painter->drawRect(boundingRect().topRight().x(), boundingRect().topRight().y(), -20,20);
+        painter->drawRect(boundingRect().bottomLeft().x(), boundingRect().bottomLeft().y(), 20,-20);
+        painter->drawRect(boundingRect().bottomRight().x(), boundingRect().bottomRight().y(), -20,-20);
+        break;
+    case 2:
+        painter->setBrush(QBrush(Qt::red, Qt::SolidPattern));
+        painter->drawRect(boundingRect().topRight().x(), boundingRect().topRight().y(), -20,20);
+        painter->setBrush(QBrush(Qt::blue, Qt::SolidPattern));
+        painter->drawRect(boundingRect().topLeft().x(), boundingRect().topLeft().y(), 20,20);
+        painter->drawRect(boundingRect().bottomLeft().x(), boundingRect().bottomLeft().y(), 20,-20);
+        painter->drawRect(boundingRect().bottomRight().x(), boundingRect().bottomRight().y(), -20,-20);
+        break;
+    case 3:
+        painter->setBrush(QBrush(Qt::red, Qt::SolidPattern));
+        painter->drawRect(boundingRect().bottomLeft().x(), boundingRect().bottomLeft().y(), 20,-20);
+        painter->setBrush(QBrush(Qt::blue, Qt::SolidPattern));
+        painter->drawRect(boundingRect().topLeft().x(), boundingRect().topLeft().y(), 20,20);
+        painter->drawRect(boundingRect().topRight().x(), boundingRect().topRight().y(), -20,20);
+        painter->drawRect(boundingRect().bottomRight().x(), boundingRect().bottomRight().y(), -20,-20);
+        break;
+    case 4:
+        painter->setBrush(QBrush(Qt::red, Qt::SolidPattern));
+        painter->drawRect(boundingRect().bottomRight().x(), boundingRect().bottomRight().y(), -20,-20);
+        painter->setBrush(QBrush(Qt::blue, Qt::SolidPattern));
+        painter->drawRect(boundingRect().topLeft().x(), boundingRect().topLeft().y(), 20,20);
+        painter->drawRect(boundingRect().topRight().x(), boundingRect().topRight().y(), -20,20);
+        painter->drawRect(boundingRect().bottomLeft().x(), boundingRect().bottomLeft().y(), 20,-20);
+        break;
+    default:
+        painter->setBrush(QBrush(Qt::blue, Qt::SolidPattern));
+        painter->drawRect(boundingRect().topLeft().x(), boundingRect().topLeft().y(), 20,20);
+        painter->drawRect(boundingRect().topRight().x(), boundingRect().topRight().y(), -20,20);
+        painter->drawRect(boundingRect().bottomLeft().x(), boundingRect().bottomLeft().y(), 20,-20);
+        painter->drawRect(boundingRect().bottomRight().x(), boundingRect().bottomRight().y(), -20,-20);
+        break;
+    }
+
+    update();
+}
+
+/*void DraggableRectItem::loadppoint(QPointF)
+{
+
+}*/

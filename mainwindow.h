@@ -14,6 +14,8 @@ public:
 private:
     QGraphicsView* view;
     QGraphicsScene* scene;
+public slots:
+    void loadpoint(QPointF p);
 };
 
 #endif // MAINWINDOW_H
