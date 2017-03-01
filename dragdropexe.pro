@@ -14,9 +14,11 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    draggablerectitem.cpp
+    draggablerectitem.cpp \
+    scene.cpp
 
 HEADERS  += mainwindow.h \
-    draggablerectitem.h
+    draggablerectitem.h \
+    scene.h
 
 FORMS    += mainwindow.ui

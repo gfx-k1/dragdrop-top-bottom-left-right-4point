@@ -23,9 +23,11 @@ public:
     static QPointF enterpos;
     static bool firstpos;
     QRectF boundingRect() const { return rect; }
-    QPointF lastPoint() { return m_p; }
+    QPoint m_p;
+
+    QPointF lastPoint();  // { return m_p; }
     void setRect(QRectF r) {rect = r;}
-    void getPos(QPointF pf){ m_p.setX(pf.x()); m_p.setY(pf.y());}
+    //void getPos(QPointF pf){ m_p.setX(pf.x()); m_p.setY(pf.y());}
 public slots:
 
     //void loadppoint(QPointF);
@@ -47,7 +49,7 @@ private:
     bool m_dragged;
     QPen m_pen;
     QBrush m_brush;
-    QPoint m_p;
+   // QPoint m_p;
     //void getPos(QPointF pf){ m_p = pf;}
 
 signals:

@@ -8,6 +8,12 @@
 #include <QDebug>
 #include "draggablerectitem.h"
 
+#include <QToolBar>
+#include "scene.h"
+#include <QAction>
+
+
+
 namespace Ui {
 class MainWindow;
 }
@@ -22,13 +28,20 @@ public:
 
 private:
     Ui::MainWindow *ui;
-
-    QGraphicsScene* scene;
     DraggableRectItem* dItem;
-
+    Scene* scene;
+    QGraphicsRectItem* itr1;
+    QGraphicsRectItem* itr2;
 public slots:
     void loadpoint(QPointF p);
+    void line();
+    void cancel();
+    void selection();
+    void rect1();
+    void rect2();
     void test();
+    void makecopy(QPointF pp);
+
 
 };
 

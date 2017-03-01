@@ -26,6 +26,12 @@ void DraggableRectItem::setAnchorPoint(const QPointF &anchorPoint){
     this->anchorPoint = anchorPoint;
 }
 
+QPointF DraggableRectItem::lastPoint()
+{
+    return m_p;
+    qDebug() << "chiamata ...:" << m_p;
+}
+
 void DraggableRectItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     enterpos.setX(event->pos().x());
@@ -206,8 +212,11 @@ void DraggableRectItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event){
 
 
             }
-            getPos(this->pos());
-            //qDebug() << "mystupid pos ....." << this->pos();
+            //getPos(this->pos());
+            m_p.setX(this->pos().x());
+            m_p.setY(this->pos().y());
+            emit emitpoint(m_p);
+            qDebug() << "mystupid pos ....." << m_p;
 
         }
         enterpos.setX(0);
