@@ -69,6 +69,9 @@ void DraggableRectItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event){
     qreal min = 0;
     qreal mis1 = 0;
     qreal mis2 = 0;
+    QPointF p;
+    p.setX(event->scenePos().x());
+    p.setY(event->scenePos().y());
 
 
 
@@ -80,101 +83,103 @@ void DraggableRectItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event){
             QGraphicsItem* closestItem = colItems.at(0);
             qreal shortestDist = 100000;
             foreach(QGraphicsItem* item, colItems){
+               // if(closestItem->contains(movepos))
+                //{
+                    switch (colourchooser) {
+                    case 1:
+                        if(!firstpos){
+                        mis1 = QLineF(item->sceneBoundingRect().topRight(),  p).length();
+                        mis2 = QLineF(item->sceneBoundingRect().bottomRight(),  p).length();
+                        min = qMin(mis1, mis2);
 
-                switch (colourchooser) {
-                case 1:
-                    if(!firstpos){
-                    mis1 = QLineF(item->sceneBoundingRect().topRight(),  movepos).length();
-                    mis2 = QLineF(item->sceneBoundingRect().bottomRight(),  movepos).length();
-                    min = qMin(mis1, mis2);
-
-                    if(min < shortestDist){
-                        shortestDist = min;
-                        closestItem = item;
+                        if(min < shortestDist){
+                            shortestDist = min;
+                            closestItem = item;
+                        }
+                        if(min == mis1)
+                        {
+                            this->setPos(QPointF(closestItem->scenePos().x()+80, closestItem->scenePos().y()));
+                        }
+                        else
+                        {
+                            this->setPos(QPointF(closestItem->scenePos().x()+80, closestItem->scenePos().y()));
+                        }
+                        qDebug() << "1 topright/topleft:  " << mis1;
+                        qDebug() << "1 Bottomright/topleft:  " << mis2;
+                        //firstpos = true;
+                        }
+                        break;
+                    case 2:
+                        if(!firstpos){
+                        mis1 = QLineF(item->sceneBoundingRect().topLeft(), p).length();
+                        mis2 = QLineF(item->sceneBoundingRect().bottomLeft(), p).length();
+                        min = qMin(mis1, mis2);
+                        if(min < shortestDist){
+                            shortestDist = min;
+                            closestItem = item;
+                        }
+                        if(min == mis1)
+                        {
+                            this->setPos(QPointF(closestItem->scenePos().x()-80, closestItem->scenePos().y()));
+                        }
+                        else
+                        {
+                            this->setPos(QPointF(closestItem->scenePos().x()-80, closestItem->scenePos().y()+50));
+                        }
+                        qDebug() << "2 topLeft/topRight:  " << mis1;
+                        qDebug() << "2 bottomLeft/topRight:  " << mis2;
+                        //firstpos = true;
+                        }
+                        break;
+                    case 3:
+                        if(!firstpos){
+                        mis1 = QLineF(item->sceneBoundingRect().topRight(), p).length();
+                        mis2 = QLineF(item->sceneBoundingRect().bottomRight(), p).length();
+                        min = qMin(mis1, mis2);
+                        if(min < shortestDist){
+                            shortestDist = min;
+                            closestItem = item;
+                        }
+                        if(min == mis1)
+                        {
+                            this->setPos(QPointF(closestItem->scenePos().x()+80, closestItem->scenePos().y()-50));
+                        }
+                        else
+                        {
+                            this->setPos(QPointF(closestItem->scenePos().x()+80, closestItem->scenePos().y()));
+                        }
+                        qDebug() << "3 topright/bottomLeft:  " << mis1;
+                        qDebug() << "3 bottomright/bottomLeft:  " << mis2;
+                        //firstpos = true;
+                        }
+                        break;
+                    case 4:
+                        if(!firstpos){
+                        mis1 = QLineF(item->sceneBoundingRect().topLeft(), p).length();
+                        mis2 = QLineF(item->sceneBoundingRect().bottomLeft(), p).length();
+                        min = qMin(mis1, mis2);
+                        if(min < shortestDist){
+                            shortestDist = min;
+                            closestItem = item;
+                        }
+                        if(min == mis1)
+                        {
+                            this->setPos(QPointF(closestItem->scenePos().x()-80, closestItem->scenePos().y()-50));
+                        }
+                        else
+                        {
+                            this->setPos(QPointF(closestItem->scenePos().x()-80, closestItem->scenePos().y()));
+                        }
+                        qDebug() << "4 topLeft/bottomright:  " << mis1;
+                        qDebug() << "4 bottomLeft/bottomright:  " << mis2;
+                        //firstpos = true;
+                        }
+                        break;
+                    default:
+                        this->setPos(anchorPoint);
+                        break;
                     }
-                    if(min == mis1)
-                    {
-                        this->setPos(QPointF(closestItem->scenePos().x()+80, closestItem->scenePos().y()));
-                    }
-                    else
-                    {
-                        this->setPos(QPointF(closestItem->scenePos().x()+80, closestItem->scenePos().y()+50));
-                    }
-                    qDebug() << "1 topright/topleft:  " << mis1;
-                    qDebug() << "1 Bottomright/topleft:  " << mis2;
-                    //firstpos = true;
-                    }
-                    break;
-                case 2:
-                    if(!firstpos){
-                    mis1 = QLineF(item->sceneBoundingRect().topLeft(), movepos).length();
-                    mis2 = QLineF(item->sceneBoundingRect().bottomLeft(), movepos).length();
-                    min = qMin(mis1, mis2);
-                    if(min < shortestDist){
-                        shortestDist = min;
-                        closestItem = item;
-                    }
-                    if(min == mis1)
-                    {
-                        this->setPos(QPointF(closestItem->scenePos().x()-80, closestItem->scenePos().y()));
-                    }
-                    else
-                    {
-                        this->setPos(QPointF(closestItem->scenePos().x()-80, closestItem->scenePos().y()+50));
-                    }
-                    qDebug() << "2 topLeft/topRight:  " << mis1;
-                    qDebug() << "2 bottomLeft/topRight:  " << mis2;
-                    //firstpos = true;
-                    }
-                    break;
-                case 3:
-                    if(!firstpos){
-                    mis1 = QLineF(item->sceneBoundingRect().topRight(), movepos).length();
-                    mis2 = QLineF(item->sceneBoundingRect().bottomRight(), movepos).length();
-                    min = qMin(mis1, mis2);
-                    if(min < shortestDist){
-                        shortestDist = min;
-                        closestItem = item;
-                    }
-                    if(min == mis1)
-                    {
-                        this->setPos(QPointF(closestItem->scenePos().x()+80, closestItem->scenePos().y()-50));
-                    }
-                    else
-                    {
-                        this->setPos(QPointF(closestItem->scenePos().x()+80, closestItem->scenePos().y()));
-                    }
-                    qDebug() << "3 topright/bottomLeft:  " << mis1;
-                    qDebug() << "3 bottomright/bottomLeft:  " << mis2;
-                    //firstpos = true;
-                    }
-                    break;
-                case 4:
-                    if(!firstpos){
-                    mis1 = QLineF(item->sceneBoundingRect().topLeft(), movepos).length();
-                    mis2 = QLineF(item->sceneBoundingRect().bottomLeft(), movepos).length();
-                    min = qMin(mis1, mis2);
-                    if(min < shortestDist){
-                        shortestDist = min;
-                        closestItem = item;
-                    }
-                    if(min == mis1)
-                    {
-                        this->setPos(QPointF(closestItem->scenePos().x()-80, closestItem->scenePos().y()-50));
-                    }
-                    else
-                    {
-                        this->setPos(QPointF(closestItem->scenePos().x()-80, closestItem->scenePos().y()));
-                    }
-                    qDebug() << "4 topLeft/bottomright:  " << mis1;
-                    qDebug() << "4 bottomLeft/bottomright:  " << mis2;
-                    //firstpos = true;
-                    }
-                    break;
-                default:
-                    this->setPos(anchorPoint);
-                    break;
-                }
+                //}
 
 
             }
